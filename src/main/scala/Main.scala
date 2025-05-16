@@ -243,7 +243,7 @@ object CareerPathExplorer {
           //------------------------>core
         case None => tokens match {
           case words if (words.exists(w => List(
-            "advice", "advise", "advicee", "advisee","career", "carrer", "carreer", "carrere", "carear","job", "jobs", "work", "working", "profession", "profesion"
+            "advice", "advise", "advicee", "advisee","advices","career", "carrer", "carreer", "carrere", "carear","job", "jobs", "work", "working", "profession", "profesion"
           ).contains(w))) && counter == 0 =>
             provideCareerAdvice(input, state, counter)
 
@@ -746,22 +746,46 @@ object CareerPathExplorer {
       user.copy(quizResults = QuizInteraction(interactionCount, question, userAnswer, evaluation) :: user.quizResults)
     }
 
-    def getInteractionSummary(user: UserProfile): String = {
-      val total = user.interactions.size + user.quizResults.size
-      val careerTopics = user.interactions.count(i =>
-        i.userInput.toLowerCase.contains("career") ||
-          i.userInput.toLowerCase.contains("advice"))
-      val quizAttempts = user.quizResults.size
-      val mostPopularField = getMostPopularField(user)
-      val personalityTrends = getPersonalityTrends(user)
+    private def getAllMessages(user: UserProfile): String = {
+      if (user.interactions.isEmpty) {
+        "No messages exchanged yet."
+      } else {
+        user.interactions
+          .map(i => s"[ID: ${i.id}] You: ${i.userInput} | Bot: ${i.botResponse}")
+          .mkString("\n")
+      }
+    }
 
-      s"""|=== Career Path Explorer Analytics for ${user.username} ===
-          |Total interactions: $total
-          |Career advice requests: $careerTopics
-          |Quiz attempts: $quizAttempts
-          |Most discussed field: ${mostPopularField.getOrElse("None")}
-          |Personality trends: ${personalityTrends.getOrElse("No data")}
-          |""".stripMargin
+    private def getQuizPerformance(user: UserProfile): String = {
+      if (user.quizResults.isEmpty) {
+        "No quiz attempts yet."
+      } else {
+        val totalQuestions = user.quizResults.size
+        val correctAnswers = user.quizResults.count(_.evaluation.toLowerCase.contains("correct"))
+        val accuracyRate = if (totalQuestions > 0) (correctAnswers.toDouble / totalQuestions * 100).toInt else 0
+        s"User got $correctAnswers/$totalQuestions correct | Accuracy Rate: $accuracyRate%"
+      }
+    }
+
+    private def getSmartAnalytics(user: UserProfile): String = {
+      if (user.quizResults.isEmpty) {
+        "No quiz data available for smart analytics."
+      } else {
+        val questionFrequency = user.quizResults.groupBy(_.question).mapValues(_.size)
+        val mostAskedQuestion = questionFrequency.maxByOption(_._2) match {
+          case Some((question, count)) => s"Most Asked Question: $question (asked $count times)"
+          case None => "Most Asked Question: None"
+        }
+
+        val wrongAnswers = user.quizResults.filter(_.evaluation.toLowerCase.contains("incorrect"))
+        val wrongAnswerFrequency = wrongAnswers.groupBy(_.userAnswer).mapValues(_.size)
+        val frequentWrongAnswer = wrongAnswerFrequency.maxByOption(_._2) match {
+          case Some((answer, count)) => s"Frequent Wrong Answer: $answer (given $count times)"
+          case None => "Frequent Wrong Answer: None"
+        }
+
+        s"$mostAskedQuestion\n$frequentWrongAnswer"
+      }
     }
 
     private def getMostPopularField(user: UserProfile): Option[String] = {
@@ -783,6 +807,58 @@ object CareerPathExplorer {
         val grouped = traits.groupBy(identity).view.mapValues(_.size).toMap
         Some(grouped.map { case (k, v) => s"$k ($v)" }.mkString(", "))
       }
+    }
+
+    def getInteractionSummary(user: UserProfile): String = {
+      val total = user.interactions.size + user.quizResults.size
+      val careerTopics = user.interactions.count(i =>
+        i.userInput.toLowerCase.contains("career") ||
+          i.userInput.toLowerCase.contains("advice"))
+      val quizAttempts = user.quizResults.size
+      val mostPopularField = getMostPopularField(user)
+      val personalityTrends = getPersonalityTrends(user)
+
+      val messagesSection = s"""
+        |📜 Messages Exchanged 📜
+        |------------------------
+        |${getAllMessages(user)}
+        |""".stripMargin
+
+      val statsSection = s"""
+        |📊 General Statistics 📊
+        |------------------------
+        |Total Interactions: $total
+        |Career Advice Requests: $careerTopics
+        |Quiz Attempts: $quizAttempts
+        |Most Discussed Field: ${mostPopularField.getOrElse("None")}
+        |""".stripMargin
+
+      val quizSection = s"""
+        |🎓 Quiz Performance 🎓
+        |------------------------
+        |${getQuizPerformance(user)}
+        |""".stripMargin
+
+      val analyticsSection = s"""
+        |🧠 Smart Analytics 🧠
+        |------------------------
+        |${getSmartAnalytics(user)}
+        |Personality Trends: ${personalityTrends.getOrElse("No data")}
+        |""".stripMargin
+
+      s"""
+        |=======================================
+        |       Career Path Explorer Dashboard
+        |       User: ${user.username}
+        |=======================================
+        |$messagesSection
+        |$statsSection
+        |$quizSection
+        |$analyticsSection
+        |=======================================
+        |Thank you for using Career Path Explorer!
+        |=======================================
+        |""".stripMargin
     }
   }
 
