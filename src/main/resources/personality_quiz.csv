@@ -1,0 +1,11 @@
+question,options,traitMapping
+"Do you prefer working with people or technology?","People,Technology","People:social-oriented,Technology:technical-oriented"
+"Are you more creative or analytical?","Creative,Analytical","Creative:creative-fields,Analytical:analytical-fields"
+"Do you prefer structured or flexible work environments?","Structured,Flexible","Structured:traditional-roles,Flexible:innovative-roles"
+"How do you prefer to solve problems?","Independently,In a team","Independently:autonomous-roles,In a team:collaborative-roles"
+"Do you enjoy public speaking?","Yes,No","Yes:communication-roles,No:behind-scenes-roles"
+"Are you more detail-oriented or big-picture focused?","Detail-oriented,Big-picture","Detail-oriented:precision-roles,Big-picture:strategic-roles"
+"Do you prefer routine tasks or new challenges?","Routine,New challenges","Routine:stable-roles,New challenges:dynamic-roles"
+"Are you more comfortable with numbers or words?","Numbers,Words","Numbers:quantitative-roles,Words:qualitative-roles"
+"Do you prefer to lead or follow?","Lead,Follow","Lead:leadership-roles,Follow:support-roles"
+"Are you more practical or theoretical?","Practical,Theoretical","Practical:applied-roles,Theoretical:research-roles" 
