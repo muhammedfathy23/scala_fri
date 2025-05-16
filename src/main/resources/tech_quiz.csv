@@ -1,0 +1,4 @@
+question,options,correctAnswer,hints
+"Which language is most commonly used for data science?","Python,Java,C++,Ruby","Python","This language is known for its data science libraries like pandas and numpy,It's named after a snake,It's one of the most beginner-friendly programming languages"
+"What is the main purpose of version control systems like Git?","Code Management,Database Storage,Web Hosting,Email Service","Code Management","It helps track changes in code,It's used for collaboration between developers,It helps manage different versions of code"
+"Which of these is NOT a programming paradigm?","Photography,Object-Oriented,Functional,Procedural","Photography","This is an art form not a programming concept,The other options are all programming paradigms,This involves cameras and images" 

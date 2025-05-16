@@ -1,3 +1,4 @@
+import scala.annotation.meta.field
 object CareerPathExplorer {
 
   // ====================== Domain Models ======================
@@ -154,17 +155,70 @@ object CareerPathExplorer {
       (tokens, state.awaitingQuizType, state.currentQuiz) match {
         case (words, false, None) if words.exists(w => w == "quiz" || w == "exam") =>
           val newState = state.copy(awaitingQuizType = true)
-          return ("Would you prefer a knowledge quiz about careers or a personality assessment?", newState, counter)
+          return ("Which quiz would you like to take?\n1. Tech Quiz\n2. Healthcare Quiz\n3. Finance Quiz\n4. Arts Quiz\n5. Education Quiz\n6. Engineering Quiz\n7. Personality Quiz", newState, counter)
 
-        case (words, true, _) if words.exists(w => w == "knowledge" || w == "personality") =>
-          val quizType = if (words.contains("knowledge")) "knowledge" else "personality"
-          val selectedQuiz = QuizGenerator.selectQuizQuestions(quizType)
+        case (words, true, _) if words.exists(w => List("1", "tech", "technology").contains(w)) =>
+          val selectedQuiz = QuizGenerator.selectQuizQuestions("tech")
           val firstQuestion = selectedQuiz.head match {
-            case Left(q) => formatQuestion(q)
-            case Right(p) => formatQuestion(p)
+            case Left(q) => formatQuestion(Left(q))
+            case Right(p) => formatQuestion(Right(p))
           }
           val updatedState = state.copy(currentQuiz = Some(selectedQuiz), awaitingQuizType = false)
-          return (s"Starting $quizType quiz:\n$firstQuestion", updatedState, counter)
+          return (s"Starting Tech Quiz:\n$firstQuestion", updatedState, counter)
+
+        case (words, true, _) if words.exists(w => List("2", "healthcare", "health", "medical").contains(w)) =>
+          val selectedQuiz = QuizGenerator.selectQuizQuestions("healthcare")
+          val firstQuestion = selectedQuiz.head match {
+            case Left(q) => formatQuestion(Left(q))
+            case Right(p) => formatQuestion(Right(p))
+          }
+          val updatedState = state.copy(currentQuiz = Some(selectedQuiz), awaitingQuizType = false)
+          return (s"Starting Healthcare Quiz:\n$firstQuestion", updatedState, counter)
+
+        case (words, true, _) if words.exists(w => List("3", "finance", "financial").contains(w)) =>
+          val selectedQuiz = QuizGenerator.selectQuizQuestions("finance")
+          val firstQuestion = selectedQuiz.head match {
+            case Left(q) => formatQuestion(Left(q))
+            case Right(p) => formatQuestion(Right(p))
+          }
+          val updatedState = state.copy(currentQuiz = Some(selectedQuiz), awaitingQuizType = false)
+          return (s"Starting Finance Quiz:\n$firstQuestion", updatedState, counter)
+
+        case (words, true, _) if words.exists(w => List("4", "arts", "art", "creative").contains(w)) =>
+          val selectedQuiz = QuizGenerator.selectQuizQuestions("arts")
+          val firstQuestion = selectedQuiz.head match {
+            case Left(q) => formatQuestion(Left(q))
+            case Right(p) => formatQuestion(Right(p))
+          }
+          val updatedState = state.copy(currentQuiz = Some(selectedQuiz), awaitingQuizType = false)
+          return (s"Starting Arts Quiz:\n$firstQuestion", updatedState, counter)
+
+        case (words, true, _) if words.exists(w => List("5", "education", "teaching", "teacher").contains(w)) =>
+          val selectedQuiz = QuizGenerator.selectQuizQuestions("education")
+          val firstQuestion = selectedQuiz.head match {
+            case Left(q) => formatQuestion(Left(q))
+            case Right(p) => formatQuestion(Right(p))
+          }
+          val updatedState = state.copy(currentQuiz = Some(selectedQuiz), awaitingQuizType = false)
+          return (s"Starting Education Quiz:\n$firstQuestion", updatedState, counter)
+
+        case (words, true, _) if words.exists(w => List("6", "engineering", "engineer").contains(w)) =>
+          val selectedQuiz = QuizGenerator.selectQuizQuestions("engineering")
+          val firstQuestion = selectedQuiz.head match {
+            case Left(q) => formatQuestion(Left(q))
+            case Right(p) => formatQuestion(Right(p))
+          }
+          val updatedState = state.copy(currentQuiz = Some(selectedQuiz), awaitingQuizType = false)
+          return (s"Starting Engineering Quiz:\n$firstQuestion", updatedState, counter)
+
+        case (words, true, _) if words.exists(w => List("7", "personality", "personality test").contains(w)) =>
+          val selectedQuiz = QuizGenerator.selectQuizQuestions("personality")
+          val firstQuestion = selectedQuiz.head match {
+            case Left(q) => formatQuestion(Left(q))
+            case Right(p) => formatQuestion(Right(p))
+          }
+          val updatedState = state.copy(currentQuiz = Some(selectedQuiz), awaitingQuizType = false)
+          return (s"Starting Personality Quiz:\n$firstQuestion", updatedState, counter)
 
         case (words, _, Some(_)) if words.exists(w => List("stop", "end", "quit", "exit", "cancel").contains(w)) =>
           val summary = AnalyticsDashboard.getInteractionSummary(state.user.get)
@@ -174,29 +228,61 @@ object CareerPathExplorer {
         case _ => // fall through to rest of function
       }
 
+
       state.currentQuiz match {
         case Some(quiz) =>
           val (response, updatedState) = handleQuizResponse(input.toLowerCase.trim, quiz, state)
           (response, updatedState, counter)
 
+
+
+
+
+
+
+          //------------------------>core
         case None => tokens match {
-          case words if (words.exists(w => w == "advice" || w == "career")) && counter == 0 =>
+          case words if (words.exists(w => List(
+            "advice", "advise", "advicee", "advisee","career", "carrer", "carreer", "carrere", "carear","job", "jobs", "work", "working", "profession", "profesion"
+          ).contains(w))) && counter == 0 =>
             provideCareerAdvice(input, state, counter)
 
-          case words if words.exists(w => List("tech", "healthcare", "arts", "finance", "education", "engineering").contains(w)) && counter == 1 =>
-            val field = findClosestField(input.toLowerCase, careerFields) match {
-              case Some(f) => f
-              case None =>
-                // Fallback to original logic
-                if (words.contains("tech")) "Tech"
-                else if (words.contains("healthcare")) "Healthcare"
-                else if (words.contains("arts")) "Arts"
-                else if (words.contains("finance")) "Finance"
-                else if (words.contains("education")) "Education"
-                else "Engineering"
-            }
-            val updatedState = state.copy(currentField = Some(field))
-            provideCareerAdvice(field, updatedState, counter)
+
+
+        case word if word.exists(w=>List("any thing", "anything", "any feild", "any field", "any fields",
+          "i do not know", "idk", "i dont know", "i don't know", "dont know", "don't know",
+          "not sure", "unsure", "no idea","suggest", "sugest", "sugjest", "sugjestion", "suggestion",
+          "help me choose","choose for me","random", "whatever", "what ever", "any", "anyone", "any one","any option", "any options",
+          "any choice", "any choices").contains(w)) && counter==1 =>
+          val randomIndex = scala.util.Random.nextInt(careerFields.length)
+          val randomfield = careerFields(randomIndex)
+          val roles = jobRoles.filter(_.field.equalsIgnoreCase(randomfield.name))
+          val randomrolist = roles.map(_.title).mkString(", ")
+          
+          val details = s"""I suggest you look into ${randomfield.name}:
+                         |Description: ${randomfield.description}
+                         |Required Skills: ${randomfield.requiredSkills.mkString(", ")}
+                         |_____________________________________________
+                         |Here are some roles in this field: $randomrolist.
+                         |Which role would you like to know more about?""".stripMargin
+          
+          (details, state.copy(currentField = Some(randomfield.name)), counter + 1)
+
+
+
+        case words if words.exists(w => List("tech", "teck", "tecnology", "tecknology","techy", "tecky", "techie", "teckie","healthcare", "helthcare", "health", "heath", "helth","health care", "health-care", "helth care","arts", "art", "artrs", "arte", "artes","finance", "finanse", "financ", "financial", "finantial", "finanshial","education", "eduction", "edukation", "edukashun","engineering", "enginering", "engneering", "enginiering", "engineer", "enginner"
+         ).contains(w)) && counter == 1 =>
+          val selectedField = {
+            if (words.contains("tech", "teck", "tecnology", "tecknology","techy", "tecky", "techie", "teckie")) "Tech"
+            else if (words.contains("healthcare", "helthcare", "health", "heath", "helth","health care", "health-care", "helth care")) "Healthcare"
+            else if (words.contains("arts", "art", "artrs", "arte", "artes")) "Arts"
+            else if (words.contains("finance", "finanse", "financ", "financial", "finantial", "finanshial")) "Finance"
+            else if (words.contains("education", "eduction", "edukation", "edukashun")) "Education"
+            else "Engineering"
+          }
+          
+          val updatedState = state.copy(currentField = Some(selectedField))
+          provideCareerAdvice(selectedField, updatedState, counter)
 
 
 //-----------------------------------> case for random role
@@ -209,18 +295,18 @@ object CareerPathExplorer {
                                           |Would you like to know more about this role or explore another role?""".stripMargin
                           (details, state.copy(currentRole = Some(randomRole.title)), counter + 1)
 
-          
+
             //-----------------------------------> case for specific role
           case s if counter == 2 && state.currentField.isDefined =>
             // Check if user is asking about a specific role
             val inputLower = input.toLowerCase.trim
             val fieldRoles = jobRoles.filter(_.field.equalsIgnoreCase(state.currentField.get))
-            val role = findClosestRole(inputLower, fieldRoles) match {
-              case Some(r) => Some(r)
-              case None =>
-                // Fallback to original logic
-                jobRoles.find(r => r.title.toLowerCase.contains(inputLower) || inputLower.contains(r.title.toLowerCase))
-            }
+            val role = fieldRoles.find(r => 
+              r.title.toLowerCase.contains(inputLower) || 
+              inputLower.contains(r.title.toLowerCase) ||
+              r.title.toLowerCase.split(" ").exists(word => inputLower.contains(word))
+            )
+            
             role match {
               case Some(r) =>
                 val details = s"""Role: ${r.title}
@@ -230,7 +316,6 @@ object CareerPathExplorer {
                                  |Would you like to know about more role or know more informations about this role or explore another field?""".stripMargin
                 (details, state.copy(currentRole = Some(r.title)), counter + 1)
               case None =>
-                val fieldRoles = jobRoles.filter(_.field.equalsIgnoreCase(state.currentField.get))
                 val roleList = fieldRoles.map(_.title).mkString(", ")
                 ("I didn't recognize that role. Please try again with one of these roles: " + roleList, state, counter)
             }
@@ -281,6 +366,10 @@ object CareerPathExplorer {
                   ("Would you like to explore more roles or another field?", state, counter)
               }
             }
+
+
+
+
 
           case s if (s.exists(w=>List("hi","welcome","hello","3aml eh","hey","hi there","hello there","hey there","good morning","good afternoon","good evening","marhaba","salam","salamo alaikom").contains(w)))=>
             ("Hello! I'm your friendly Career Path Explorer chatbot. I'm here to help you discover your career path! \nWould you like career advice or to take a quiz?",state,0)
@@ -407,57 +496,81 @@ object CareerPathExplorer {
             unusedHints match {
               case hint :: remainingHints =>
                 val newState = state.copy(usedHints = hint :: state.usedHints)
-                (s"That's okay! Here's a hint: $hint\nTry again with one of the options:\n${formatQuestion(q)}",
+                (s"That's okay! Here's a hint: $hint\nTry again with one of the options:\n${formatQuestion(Left(q))}",
                   newState)
 
               case Nil =>
                 if (state.usedHints.nonEmpty) {
-                  (s"I'm out of hints! You must choose one of these options:\n${formatQuestion(q)}",
+                  (s"I'm out of hints! You must choose one of these options:\n${formatQuestion(Left(q))}",
                     state)
                 } else {
-                  (s"You need to choose one of these options:\n${formatQuestion(q)}",
+                  (s"You need to choose one of these options:\n${formatQuestion(Left(q))}",
                     state)
                 }
             }
           } else {
-            val evaluation = QuizGenerator.evaluateAnswer(Left(q), answer)
-            val updatedUser = AnalyticsDashboard.logQuizInteraction(q.question, answer, evaluation, state.user.get)
+            val numericAnswer = answer.trim
+            val selectedOption = if (numericAnswer.matches("\\d+")) {
+              val index = numericAnswer.toInt - 1
+              if (index >= 0 && index < q.options.length) {
+                q.options(index)
+              } else {
+                numericAnswer
+              }
+            } else {
+              answer.trim
+            }
+
+            val evaluation = QuizGenerator.evaluateAnswer(Left(q), selectedOption)
+            val updatedUser = AnalyticsDashboard.logQuizInteraction(q.question, selectedOption, evaluation, state.user.get)
             val updatedState = state.copy(user = Some(updatedUser))
 
-            if (q.correctAnswer.equalsIgnoreCase(answer.trim) || evaluation.startsWith("Incorrect")) {
+            if (q.correctAnswer.equalsIgnoreCase(selectedOption) || evaluation.startsWith("Incorrect")) {
               if (tail.isEmpty) {
                 (s"$evaluation\nQuiz complete! Type 'exit' to see your analytics.",
                   updatedState.copy(currentQuiz = None, usedHints = List()))
               } else {
-                val nextQuestion = formatQuestion(tail.head.left.get)
+                val nextQuestion = formatQuestion(tail.head)
                 (s"$evaluation\nNext question:\n$nextQuestion",
                   updatedState.copy(currentQuiz = Some(tail), usedHints = List()))
               }
             } else {
-              (s"$evaluation\nPlease choose one of these options:\n${formatQuestion(q)}",
+              (s"$evaluation\nPlease choose one of these options:\n${formatQuestion(Left(q))}",
                 updatedState)
             }
           }
 
         case Right(p) :: tail =>
-          val evaluation = QuizGenerator.evaluateAnswer(Right(p), answer)
-          val matchedOption = p.options.find(opt => answer.toLowerCase.contains(opt.toLowerCase))
+          val numericAnswer = answer.trim
+          val selectedOption = if (numericAnswer.matches("\\d+")) {
+            val index = numericAnswer.toInt - 1
+            if (index >= 0 && index < p.options.length) {
+              p.options(index)
+            } else {
+              numericAnswer
+            }
+          } else {
+            answer.trim
+          }
+
+          val evaluation = QuizGenerator.evaluateAnswer(Right(p), selectedOption)
+          val matchedOption = p.options.find(opt => selectedOption.toLowerCase.contains(opt.toLowerCase))
 
           matchedOption match {
             case Some(opt) =>
-              val updatedUser = AnalyticsDashboard.logQuizInteraction(p.question, answer, evaluation, state.user.get)
+              val updatedUser = AnalyticsDashboard.logQuizInteraction(p.question, selectedOption, evaluation, state.user.get)
               val updatedState = state.copy(user = Some(updatedUser))
-              
+
               if (tail.isEmpty) {
                 (s"$evaluation\nBased on your answers, you might enjoy careers in: [result]. Type 'exit' to see analytics.",
                   updatedState.copy(currentQuiz = None))
               } else {
-                val nextQuestion = formatQuestion(tail.head.right.get)
+                val nextQuestion = formatQuestion(tail.head)
                 (s"$evaluation\nNext question:\n$nextQuestion",
                   updatedState.copy(currentQuiz = Some(tail)))
               }
             case None =>
-              val currentQuestion = formatQuestion(p)
+              val currentQuestion = formatQuestion(Right(p))
               (s"$evaluation\nPlease answer again:\n$currentQuestion", state.copy(currentQuiz = Some(quiz)))
           }
 
@@ -465,28 +578,25 @@ object CareerPathExplorer {
           ("Quiz complete! Type 'exit' to see your analytics.", state.copy(currentQuiz = None))
       }
     }
-
-    private def formatQuestion(question: QuizQuestion): String = {
-      // Using list operations and string interpolation
-      val numberedOptions = question.options
-        .zipWithIndex
-        .map { case (option, index) => s"${index + 1}) $option" }
-        .mkString("\n")
-
-      s"""${question.question}
-         |Choose one option:
-         |$numberedOptions""".stripMargin
-    }
-
-    private def formatQuestion(question: PersonalityQuestion): String = {
-      val numberedOptions = question.options
-        .zipWithIndex  // (programming,0)
-        .map { case (option, index) => s"${index + 1}) $option" }
-        .mkString("\n")
-
-      s"""${question.question}
-         |Choose one option:
-         |$numberedOptions""".stripMargin
+    private def formatQuestion(q: Either[QuizQuestion, PersonalityQuestion]): String = {
+      q match {
+        case Left(quizQuestion) =>
+          val numberedOptions = quizQuestion.options
+            .zipWithIndex
+            .map { case (option, index) => s"${index + 1}) $option" }
+            .mkString("\n")
+          s"""${quizQuestion.question}
+             |Choose one option:
+             |$numberedOptions""".stripMargin
+        case Right(personalityQuestion) =>
+          val numberedOptions = personalityQuestion.options
+            .zipWithIndex
+            .map { case (option, index) => s"${index + 1}) $option" }
+            .mkString("\n")
+          s"""${personalityQuestion.question}
+             |Choose one option:
+             |$numberedOptions""".stripMargin
+      }
     }
   }
 
@@ -495,8 +605,8 @@ object CareerPathExplorer {
   object QuizGenerator {
     import scala.util.Random
 
-    private def loadKnowledgeQuiz(): List[QuizQuestion] = {
-      val source = scala.io.Source.fromResource("knowledge_quiz.csv")
+    private def loadQuizFromCSV(filename: String): List[QuizQuestion] = {
+      val source = scala.io.Source.fromResource(filename)
       try {
         val lines = source.getLines().drop(1) // Skip header
         lines.map { line =>
@@ -509,11 +619,15 @@ object CareerPathExplorer {
           // Clean up the quoted strings
           val options = optionsStr.stripPrefix("\"").stripSuffix("\"").split(",").toList
           val hints = hintsStr.stripPrefix("\"").stripSuffix("\"").split(",").toList
+          val correctAns = correctAnswer.stripPrefix("\"").stripSuffix("\"")
+          
+          // Shuffle options while preserving correct answer
+          val shuffledOptions = Random.shuffle(options)
           
           QuizQuestion(
             question.stripPrefix("\"").stripSuffix("\""),
-            options,
-            correctAnswer.stripPrefix("\"").stripSuffix("\""),
+            shuffledOptions,
+            correctAns,
             hints
           )
         }.toList
@@ -553,12 +667,23 @@ object CareerPathExplorer {
       }
     }
 
-    val knowledgeQuiz: List[QuizQuestion] = loadKnowledgeQuiz()
+    // Load all quizzes from CSV files
+    val techQuiz: List[QuizQuestion] = loadQuizFromCSV("tech_quiz.csv")
+    val healthcareQuiz: List[QuizQuestion] = loadQuizFromCSV("healthcare_quiz.csv")
+    val financeQuiz: List[QuizQuestion] = loadQuizFromCSV("finance_quiz.csv")
+    val artsQuiz: List[QuizQuestion] = loadQuizFromCSV("arts_quiz.csv")
+    val educationQuiz: List[QuizQuestion] = loadQuizFromCSV("education_quiz.csv")
+    val engineeringQuiz: List[QuizQuestion] = loadQuizFromCSV("engineering_quiz.csv")
     val personalityQuiz: List[PersonalityQuestion] = loadPersonalityQuiz()
 
     def selectQuizQuestions(quizType: String): List[Either[QuizQuestion, PersonalityQuestion]] = {
       val questions = quizType match {
-        case "knowledge" => Random.shuffle(knowledgeQuiz).map(Left(_))
+        case "tech" => Random.shuffle(techQuiz).map(Left(_))
+        case "healthcare" => Random.shuffle(healthcareQuiz).map(Left(_))
+        case "finance" => Random.shuffle(financeQuiz).map(Left(_))
+        case "arts" => Random.shuffle(artsQuiz).map(Left(_))
+        case "education" => Random.shuffle(educationQuiz).map(Left(_))
+        case "engineering" => Random.shuffle(engineeringQuiz).map(Left(_))
         case "personality" => Random.shuffle(personalityQuiz).map(Right(_))
         case _ => List()
       }
@@ -572,10 +697,11 @@ object CareerPathExplorer {
 
       question match {
         case Left(q) =>
-          val help= List(
-
-            "don't know", "dont know", "no idea", "not sure", "idk", "i don't know","mesh 3aref","mesh 3arfa", "help", "hint", "need help", "give me a hint", "can you help", "stuck", "confused", "not clear", "unclear", "what should i", "how do i", "what do you mean", "maybe", "perhaps", "probably", "might be", "could be",
-            "this is hard", "too difficult", "struggling with","show hint", "next hint", "another hint", "more hints"
+          val help = List(
+            "don't know", "dont know", "no idea", "not sure", "idk", "i don't know", "mesh 3aref", "mesh 3arfa",
+            "help", "hint", "need help", "give me a hint", "can you help", "stuck", "confused", "not clear", "unclear",
+            "what should i", "how do i", "what do you mean", "maybe", "perhaps", "probably", "might be", "could be",
+            "this is hard", "too difficult", "struggling with", "show hint", "next hint", "another hint", "more hints"
           )
 
           if (help.exists(pattern => answer.toLowerCase.contains(pattern))) {
@@ -600,7 +726,6 @@ object CareerPathExplorer {
           }
       }
     }
-
   }
 
   // ====================== Analytics Dashboard ======================
